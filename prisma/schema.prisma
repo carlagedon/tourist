@@ -1,0 +1,50 @@
+generator client {
+  provider = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
+}
+
+datasource db {
+  provider = "postgresql"
+  extensions = [vector, postgis]
+}
+
+model Route {
+  id                Int     @id @default(autoincrement())
+  description String
+  startCity   String          
+  imageUrl    String?
+  locations   RouteLocation[] 
+  createdAt   DateTime        @default(now())
+}
+
+model Location {
+  id             Int             @id @default(autoincrement())
+  title          String
+  type           LocationType          
+  historyContext String          @db.Text 
+  
+  // Новое поле для PostGIS. Хранит точку (Широта и Долгота вместе)
+  coords         Unsupported("geometry(Point, 4326)")
+  
+  // Поле для RAG ИИ (Вектор)
+  embedding      Unsupported("vector(1024)")? 
+
+  routes         RouteLocation[]
+}
+
+model RouteLocation {
+  routeId    Int
+  locationId Int
+  stepOrder  Int 
+
+  route    Route    @relation(fields: [routeId], references: [id], onDelete: Cascade)
+  location Location @relation(fields: [locationId], references: [id], onDelete: Cascade)
+
+  @@id([routeId, locationId])
+}
+
+enum LocationType {
+  SIGHTSEEING
+  FOOD
+  HOTEL
+}
