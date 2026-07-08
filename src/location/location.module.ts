@@ -7,6 +7,7 @@ import { AiModule } from 'src/ai/ai.module';
 @Module({
   controllers: [LocationController],
   providers: [LocationService],
-  imports: [PrismaModule, AiModule]
+  imports: [PrismaModule, AiModule],
+  exports: [LocationService]
 })
 export class LocationModule {}

@@ -1,7 +1,20 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsArray, IsNotEmpty, IsString, IsUrl } from 'class-validator';
+import { RouteStatus } from '@prisma/client';
+import {
+  IsArray,
+  IsEnum,
+  IsNotEmpty,
+  IsNumber,
+  IsString,
+  IsUrl,
+} from 'class-validator';
 
 export class CreateRouteDto {
+  @IsString()
+  @ApiProperty({example: "title"})
+  @IsNotEmpty()
+  title: string
+
   @IsString()
   @IsNotEmpty()
   @ApiProperty({
@@ -23,4 +36,12 @@ export class CreateRouteDto {
       'https://ybis.ru/wp-content/uploads/2023/09/borovoe-kazakhstan-poselok-burabai-1.webp',
   })
   imageUrl: string;
+
+  @IsEnum(RouteStatus)
+  @ApiProperty({ example: RouteStatus.DRAFT })
+  status: RouteStatus;
+
+  @IsNumber()
+  @ApiProperty({ example: 100 })
+  totalCost: number;
 }

@@ -1,6 +1,16 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  ParseIntPipe,
+  Patch,
+  Post,
+} from '@nestjs/common';
 import { RouteLocationService } from './route-location.service';
 import { CreateRouteLocationDto } from './dto/create_location.dto';
+import { DragAndDropDto } from './dto/drag_and_drop.dto';
 
 @Controller('route-location')
 export class RouteLocationController {
@@ -18,43 +28,43 @@ export class RouteLocationController {
 
   @Get(':routeId/:locationId')
   async getRouteLocationById(
-    @Param('routeId') routeId: string,
-    @Param('locationId') locationId: string,
+    @Param('routeId') routeId: number,
+    @Param('locationId') locationId: number,
   ) {
     return await this.routeLocationService.getRouteLocationById(
-      parseInt(routeId, 10),
-      parseInt(locationId, 10),
+      routeId,
+      locationId,
     );
   }
 
   @Patch(':routeId/:locationId')
   async updateRouteLocation(
-    @Param('routeId') routeId: string,
-    @Param('locationId') locationId: string,
+    @Param('routeId') routeId: number,
+    @Param('locationId') locationId: number,
     @Body() dto: CreateRouteLocationDto,
   ) {
     return await this.routeLocationService.updateRouteLocation(
-      parseInt(routeId, 10),
-      parseInt(locationId, 10),
+      routeId,
+      locationId,
       dto,
     );
   }
 
-  @Delete(':routeId/:locationId')
-  async deleteRouteLocation(
-    @Param('routeId') routeId: string,
-    @Param('locationId') locationId: string,
+  @Delete(':routeId/stops/:locationId')
+  removeStop(
+    @Param('routeId', ParseIntPipe) routeId: number,
+    @Param('locationId', ParseIntPipe) locationId: number,
   ) {
-    return await this.routeLocationService.deleteRouteLocation(
-      parseInt(routeId, 10),
-      parseInt(locationId, 10),
-    );
+    return this.routeLocationService.removeStop(routeId, locationId);
   }
 
   @Get(':routeId')
-  async findRouteLocationByRouteId(@Param('routeId') routeId: string) {
-    return await this.routeLocationService.findRouteLocationByRouteId(
-      parseInt(routeId, 10),
-    );
+  async findRouteLocationByRouteId(@Param('routeId') routeId: number) {
+    return await this.routeLocationService.findRouteLocationByRouteId(routeId);
+  }
+
+  @Patch('id/drag_and_drop')
+  dragAndDrop(@Body() dto: DragAndDropDto[], @Param('id') id: number) {
+    return this.routeLocationService.updateRouteLocations(id, dto);
   }
 }

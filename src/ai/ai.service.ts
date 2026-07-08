@@ -5,11 +5,8 @@ import {
   ChatPromptTemplate,
   MessagesPlaceholder,
 } from '@langchain/core/prompts';
-import { ConfigService } from '@nestjs/config';
 import { PrismaService } from 'src/db/prisma.service';
-import { log } from 'console';
 import { AIMessage, HumanMessage } from '@langchain/core/messages';
-import { toPgVectorString } from 'src/utils/embedding_string';
 
 @Injectable()
 export class AiService {

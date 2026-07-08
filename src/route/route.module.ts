@@ -6,6 +6,7 @@ import { PrismaModule } from 'src/db/prisma.module';
 @Module({
   controllers: [RouteController],
   providers: [RouteService],
-  imports: [PrismaModule]
+  imports: [PrismaModule],
+  exports: [RouteService]
 })
 export class RouteModule {}

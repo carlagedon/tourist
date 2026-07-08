@@ -8,43 +8,108 @@ datasource db {
   extensions = [vector, postgis]
 }
 
-model Route {
-  id                Int     @id @default(autoincrement())
-  description String
-  startCity   String          
-  imageUrl    String?
-  locations   RouteLocation[] 
-  createdAt   DateTime        @default(now())
+enum LocationType {
+  SIGHTSEEING 
+  FOOD        
+  HOTEL       
+  ACTIVITY    
 }
 
 model Location {
-  id             Int             @id @default(autoincrement())
-  title          String
-  type           LocationType          
-  historyContext String          @db.Text 
+  id             Int          @id @default(autoincrement())
+  title          String       @unique
+  type           LocationType
   
-  // Новое поле для PostGIS. Хранит точку (Широта и Долгота вместе)
+  priceValue     Float        @default(0.0) 
+  isFree         Boolean      @default(false) 
+  tags           LocationTag[]     
+  
+  shortContext   String       @db.Text
+  loreContext    String       @db.Text
+  
+  embedding      Unsupported("vector(1024)")? 
   coords         Unsupported("geometry(Point, 4326)")
   
-  // Поле для RAG ИИ (Вектор)
-  embedding      Unsupported("vector(1024)")? 
-
   routes         RouteLocation[]
+
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+}
+
+
+enum RouteStatus {
+  DRAFT       
+  COMPLETED  
+  CANCELLED   
+}
+
+model Message {
+  id        Int         @id @default(autoincrement())
+  chatId    String
+  chat      ChatSession @relation(fields: [chatId], references: [id], onDelete: Cascade)
+  
+  role      MessageRole      
+  text      String      @db.Text 
+  
+  createdAt DateTime    @default(now())
+}
+
+enum MessageRole {
+  USER
+  ASSISTANT
+}
+
+model Route {
+  id          Int             @id @default(autoincrement())
+  title       String          
+  startCity   String          
+  totalCost   Float           @default(0.0)
+  status      RouteStatus     @default(DRAFT)
+
+  locations   RouteLocation[] 
+  chats       ChatSession[]   
+
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+}
+
+model ChatSession {
+  id        String    @id @default(uuid())
+  title     String?   
+  
+  routeId   Int?       
+  route     Route?     @relation(fields: [routeId], references: [id], onDelete: Cascade)
+  
+  messages  Message[]
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
 }
 
 model RouteLocation {
-  routeId    Int
-  locationId Int
-  stepOrder  Int 
+  id          Int      @id @default(autoincrement())
+  routeId     Int
+  locationId  Int
+  
+  route       Route    @relation(fields: [routeId], references: [id], onDelete: Cascade)
+  location    Location @relation(fields: [locationId], references: [id], onDelete: Cascade)
 
-  route    Route    @relation(fields: [routeId], references: [id], onDelete: Cascade)
-  location Location @relation(fields: [locationId], references: [id], onDelete: Cascade)
+  arrivalTime     String? 
+  durationMinutes Int?     
+  
+  stepOrder   Int      
+  aiNote      String?  @db.Text 
 
-  @@id([routeId, locationId])
+  @@unique([routeId, locationId])
 }
 
-enum LocationType {
-  SIGHTSEEING
-  FOOD
-  HOTEL
+enum LocationTag {
+  NATURE
+  LAKE
+  MEAT
+  FAMILY
+  ACTIVE
+  HISTORY
+  CHEAP
+  LUXURY
 }
